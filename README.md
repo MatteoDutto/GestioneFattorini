@@ -1,2 +1,2 @@
 # GestioneFattorini
-Progetto che comprende la realizzazione di un software, un applicazione e un server per gestire le consegne dei fattorini
+Progetto che comprende la realizzazione di un software, un applicazione e un server per gestire la logistica di un corriere
