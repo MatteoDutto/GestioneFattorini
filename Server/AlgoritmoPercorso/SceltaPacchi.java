@@ -5,18 +5,41 @@ import java.util.ArrayList;
  */
 public class SceltaPacchi
 {
-    /*Return Arraylist*/
-    public void getCorrieri(){
-        /*Riceve corrieri dal DB*/
+    private Test test = null;
+
+    public SceltaPacchi(Test test) {
+        this.test = test;
     }
+
+    /*Return Arraylist
+    public void getCorrieri(){
+        /*Riceve corrieri dal DB
+    }*/
 
     /*Return Arraylist*/
     public void sceltaCaricoPacchi(){
         /*Riceve quali pacchi deve caricare sul corriere*/
+        ArrayList<Pacco> elencoPacchi=test.getElencoPacchi();
+        ArrayList<Corriere> elencoCorrieri=test.getElencoCorrieri();
+
+        for(Pacco pacco:elencoPacchi){
+            String cap = pacco.getCittaCAP();
+            for(Corriere corriere:elencoCorrieri){
+                if(cap.equals(corriere.getCittaCAP())){
+                    corriere.addPacco(pacco);
+                    break;
+                }
+            }
+        }
     }
 
-    /*Return Arraylist*/
+
+    /*Return Arraylist
     public void getPacchi(){
-        /*Riceve i dati dei pacchi dal DB*/
-    }
+        /*Riceve i dati dei pacchi dal DB
+
+
+    }*/
+
+
 }
