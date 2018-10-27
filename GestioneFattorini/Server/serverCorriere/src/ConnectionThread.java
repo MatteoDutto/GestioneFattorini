@@ -1,15 +1,26 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
+import GestioneCorriere.Util.*;
+import GestioneCorriere.Util.ErrorList;
+import GestioneCorriere.Util.Message;
+import GestioneCorriere.Util.MessageUtil;
+
+import javax.xml.crypto.Data;
+import java.io.*;
 import java.net.Socket;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 
 /**
- * Created by inf.francoa3103 on 15/10/2018.
+ * Creato da Andrea Delmastro, Alessio Franco <br><br>
+ * Classe che rappresenta un thread di connessione con un client.
+ * Ogni volta che un client richiede una connessione al server, quando la
+ * connessione viene accettata, viene creato un thread a lui riservato.
+ * Il thread si occupa di leggere il messaggio (vedi classe Message) inviatogli
+ * dal client e di operare sul DB in relazione a quanto scritto nel messaggio.
+ * Il thread è responsabile anche della comunicazione di risposta verso il client. <br><br>
  */
+
 public class ConnectionThread extends Thread {
 
     /** Socket di comunicazione con il client */
@@ -19,56 +30,122 @@ public class ConnectionThread extends Thread {
     public ConnectionThread(Socket client) {
         this.client = client;
         /* Avvio del metodo run() */
+        System.out.println(MessagesList.CONNECTION_CLIENT_ESTABLISHED + client.getInetAddress().toString() + ":" + client.getPort());
         this.start();
     }
 
     @Override
     public void run() {
-        try {
-            /* Acquisizione della stringa inviata dal client al server per definire
-             * la richiesta */
-            BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            String socketRequest = br.readLine();
 
-            /* Divisione della stringa in due parti: la prima parte identifica la richiesta,
-             * la seconda parte identifica i dati relativi alla richiesta */
-            String[] socketRequestSplit = socketRequest.split(":");
+        try {
+
+            Message clientMessage = null;
+            clientMessage = MessageUtil.recvMessageFrom(client);
 
             /* Switch effettuato su tutte le possibili richieste inoltrabili al server */
-            if(socketRequestSplit[0].equals(DatabaseOperations.SELECT_PACK_FROM_ID)) {
+            if (clientMessage.getOperation().equals(DatabaseOperations.SELECT_PACK_FROM_ID))  selectPackFromID(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.SELECT_ALL_PACKS))  selectAllPacks(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.SELECT_ALL_NON_SENT_PACKS)) selectAllNonSentPacks(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.INSERT_PACK)) insertPack(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.REMOVE_PACK_FROM_ID)) removePackFromID(clientMessage);
+            else throw new IOException();
 
-                /* Richiesta di prelevare un pacco sulla base del suo identificativo */
-                String sql = "SELECT * FROM pacchi WHERE codicePacco = ?";
-                /* Creazione del comando SQL da lanciare */
-                PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
-                /* Inserimento dei parametri nel comando */
-                ps.setString(1, socketRequestSplit[1]);
-
-                /* Costruzione del pacco sulla base del record ritornato dal DB */
-                Pack pack = new Pack(ps.executeQuery());
-
-                /* Invio del pacco al client */
-                sendObjectToClient(client, (Object)pack);
-
-            }else if(socketRequestSplit[0].equals(DatabaseOperations.SELECT_DELIVERY_MAN_FROM_ID)) {
-
-            }
-
-        } catch(IOException ioe) {
-            System.out.println(Error.CLIENT_REQUEST_ERROR);
-            SocketUtil.closeSocket(client);
-            Error.exitError(Error.CLIENT_REQUEST_ERROR);
-        } catch(SQLException sqle) {
-            System.out.println(Error.SQL_REQUEST_ERROR);
-            SocketUtil.closeSocket(client);
-            Error.exitError(Error.SQL_REQUEST_ERROR);
-        }
+        } catch(IOException ioe) { ErrorList.defaultServerClosingOperation(client, ErrorList.CLIENT_REQUEST_ERROR); }
+          catch(SQLException sqle) { ErrorList.defaultServerClosingOperation(client, ErrorList.SQL_REQUEST_ERROR); }
+          catch(ClassNotFoundException cnfe) { ErrorList.defaultServerClosingOperation(client, ErrorList.CLIENT_REQUEST_ERROR); }
     }
 
-    /** Metodo che ricevuto un oggetto lo invia in rete al socket desiderato */
-    public void sendObjectToClient(Socket client, Object obj) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
-        oos.writeObject(obj);
-        oos.close();
+    /** Metodo che seleziona e invia al client un pacco basandosi su un determinato ID */
+    private void selectPackFromID(Message clientMessage) throws SQLException, IOException {
+        String sql = "SELECT * FROM pacchi WHERE codicePacco = ?";
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+        /* Inserimento dei parametri nel comando */
+        ps.setString(1, clientMessage.getOptions().getCodicePacco());
+
+        /* Acquisizione del risultatato */
+        ResultSet res = ps.executeQuery();
+
+        /* Costruzione del pacco sulla base del record ritornato dal DB */
+        res.next();
+        clientMessage.getPacks().add(new Pack(res));
+
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che seleziona e invia al client tutti i pacchi disponibili nel sistema sotto forma di ArrayList di Pacchi */
+    private void selectAllPacks(Message clientMessage) throws SQLException, IOException {
+        String sql = "SELECT * FROM pacchi";
+
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        /* Costruzione del pacco sulla base del record ritornato dal DB */
+        Pack pack = new Pack(ps.executeQuery());
+
+        /* Acquisizone del risultato */
+        ResultSet res = ps.executeQuery();
+
+        /* Per ogni riga del risultato viene creato un pacco corrispondente */
+        while(res.next()) clientMessage.getPacks().add(new Pack(res));
+
+        /* Invio del pacco al client */
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che seleziona e invia al client tutti i pacchi da inviare nel sistema sotto forma di ArrayList di Pacchi */
+    private void selectAllNonSentPacks(Message clientMessage) throws SQLException, IOException {
+        String sql = "SELECT * FROM pacchi WHERE consegnato = 0";
+
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        /* Costruzione del pacco sulla base del record ritornato dal DB */
+        Pack pack = new Pack(ps.executeQuery());
+
+        /* Acquisizone del risultato */
+        ResultSet res = ps.executeQuery();
+
+        /* Per ogni riga del risultato viene creato un pacco corrispondente */
+        while(res.next()) clientMessage.getPacks().add(new Pack(res));
+
+        /* Invio del pacco al client */
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che aggiunge un pacco al database */
+    private void insertPack(Message clientMessage) throws SQLException, IOException {
+        String sql = "INSERT INTO pacchi VALUES(?,?,?,?,?,?,?,?,?,?)";
+
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        ps.setString(1, clientMessage.getOptions().getCodicePacco());
+        ps.setString(2, clientMessage.getOptions().getDestinatario());
+        ps.setString(3, clientMessage.getOptions().getEdificio());
+        ps.setString(4, clientMessage.getOptions().getIndirizzo());
+        ps.setString(5, clientMessage.getOptions().getCAP());
+        ps.setString(6, clientMessage.getOptions().getPaese());
+        ps.setString(7, clientMessage.getOptions().getProvincia());
+        ps.setString(8, Integer.toString(clientMessage.getOptions().getConsegnato()));
+        ps.setString(9, clientMessage.getOptions().getNoteFattorino());
+        ps.setString(10, clientMessage.getOptions().getDataScadenza());
+
+        ps.executeUpdate();
+
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che rimuove un pacco dal database basandosi su un determinato ID */
+    private void removePackFromID(Message clientMessage) throws SQLException, IOException {
+        String sql = "REMOVE FROM pacchi WHERE codicePacco = ?";
+
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        ps.setString(1, clientMessage.getOptions().getCodicePacco());
+
+        ps.executeUpdate();
+
+        MessageUtil.sendMessageTo(client, clientMessage);
     }
 }
