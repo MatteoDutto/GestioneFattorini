@@ -3,7 +3,6 @@ import GestioneCorriere.Util.ErrorList;
 import GestioneCorriere.Util.Message;
 import GestioneCorriere.Util.MessageUtil;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
 import java.sql.PreparedStatement;
@@ -20,7 +19,6 @@ import java.sql.SQLException;
  * dal client e di operare sul DB in relazione a quanto scritto nel messaggio.
  * Il thread è responsabile anche della comunicazione di risposta verso il client. <br><br>
  */
-
 public class ConnectionThread extends Thread {
 
     /** Socket di comunicazione con il client */
@@ -48,11 +46,19 @@ public class ConnectionThread extends Thread {
             else if(clientMessage.getOperation().equals(DatabaseOperations.SELECT_ALL_NON_SENT_PACKS)) selectAllNonSentPacks(clientMessage);
             else if(clientMessage.getOperation().equals(DatabaseOperations.INSERT_PACK)) insertPack(clientMessage);
             else if(clientMessage.getOperation().equals(DatabaseOperations.REMOVE_PACK_FROM_ID)) removePackFromID(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.SELECT_DELIVERY_MAN_FROM_ID)) selectDeliveryManFromID(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.SELECT_ALL_DELIVERY_MEN)) selectAllDeliveryMen(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.INSERT_DELIVERY_MAN)) insertDeliveryMan(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.REMOVE_DELIVERY_MAN_FROM_ID)) removeDeliveryManFromID(clientMessage);
+            else if(clientMessage.getOperation().equals(DatabaseOperations.SELECT_ALL_PACKS_FROM_DELIVERY_MAN_ID)) selectAllPacksFromDeliveryManID(clientMessage);
             else throw new IOException();
 
-        } catch(IOException ioe) { ErrorList.defaultServerClosingOperation(client, ErrorList.CLIENT_REQUEST_ERROR); }
-          catch(SQLException sqle) { ErrorList.defaultServerClosingOperation(client, ErrorList.SQL_REQUEST_ERROR); }
-          catch(ClassNotFoundException cnfe) { ErrorList.defaultServerClosingOperation(client, ErrorList.CLIENT_REQUEST_ERROR); }
+            /* Chiusura del socket */
+            client.close();
+
+        } catch(IOException ioe) { ErrorList.defaultServerClosingOperation(client, ErrorList.CLIENT_REQUEST_ERROR, this); }
+          catch(SQLException sqle) { ErrorList.defaultServerClosingOperation(client, ErrorList.SQL_REQUEST_ERROR, this); }
+          catch(ClassNotFoundException cnfe) { ErrorList.defaultServerClosingOperation(client, ErrorList.CLIENT_REQUEST_ERROR, this); }
     }
 
     /** Metodo che seleziona e invia al client un pacco basandosi su un determinato ID */
@@ -61,14 +67,14 @@ public class ConnectionThread extends Thread {
         /* Creazione del comando SQL da lanciare */
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
         /* Inserimento dei parametri nel comando */
-        ps.setString(1, clientMessage.getOptions().getCodicePacco());
+        ps.setString(1, clientMessage.getPackOptions().getCodicePacco());
 
         /* Acquisizione del risultatato */
         ResultSet res = ps.executeQuery();
 
         /* Costruzione del pacco sulla base del record ritornato dal DB */
         res.next();
-        clientMessage.getPacks().add(new Pack(res));
+        clientMessage.getResPacks().add(new Pack(res));
 
         MessageUtil.sendMessageTo(client, clientMessage);
     }
@@ -80,14 +86,11 @@ public class ConnectionThread extends Thread {
         /* Creazione del comando SQL da lanciare */
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
 
-        /* Costruzione del pacco sulla base del record ritornato dal DB */
-        Pack pack = new Pack(ps.executeQuery());
-
         /* Acquisizone del risultato */
         ResultSet res = ps.executeQuery();
 
         /* Per ogni riga del risultato viene creato un pacco corrispondente */
-        while(res.next()) clientMessage.getPacks().add(new Pack(res));
+        while(res.next()) clientMessage.getResPacks().add(new Pack(res));
 
         /* Invio del pacco al client */
         MessageUtil.sendMessageTo(client, clientMessage);
@@ -107,7 +110,7 @@ public class ConnectionThread extends Thread {
         ResultSet res = ps.executeQuery();
 
         /* Per ogni riga del risultato viene creato un pacco corrispondente */
-        while(res.next()) clientMessage.getPacks().add(new Pack(res));
+        while(res.next()) clientMessage.getResPacks().add(new Pack(res));
 
         /* Invio del pacco al client */
         MessageUtil.sendMessageTo(client, clientMessage);
@@ -120,16 +123,16 @@ public class ConnectionThread extends Thread {
         /* Creazione del comando SQL da lanciare */
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
 
-        ps.setString(1, clientMessage.getOptions().getCodicePacco());
-        ps.setString(2, clientMessage.getOptions().getDestinatario());
-        ps.setString(3, clientMessage.getOptions().getEdificio());
-        ps.setString(4, clientMessage.getOptions().getIndirizzo());
-        ps.setString(5, clientMessage.getOptions().getCAP());
-        ps.setString(6, clientMessage.getOptions().getPaese());
-        ps.setString(7, clientMessage.getOptions().getProvincia());
-        ps.setString(8, Integer.toString(clientMessage.getOptions().getConsegnato()));
-        ps.setString(9, clientMessage.getOptions().getNoteFattorino());
-        ps.setString(10, clientMessage.getOptions().getDataScadenza());
+        ps.setString(1, clientMessage.getPackOptions().getCodicePacco());
+        ps.setString(2, clientMessage.getPackOptions().getDestinatario());
+        ps.setString(3, clientMessage.getPackOptions().getEdificio());
+        ps.setString(4, clientMessage.getPackOptions().getIndirizzo());
+        ps.setString(5, clientMessage.getPackOptions().getCAP());
+        ps.setString(6, clientMessage.getPackOptions().getPaese());
+        ps.setString(7, clientMessage.getPackOptions().getProvincia());
+        ps.setString(8, Integer.toString(clientMessage.getPackOptions().getConsegnato()));
+        ps.setString(9, clientMessage.getPackOptions().getNoteFattorino());
+        ps.setString(10, clientMessage.getPackOptions().getDataScadenza());
 
         ps.executeUpdate();
 
@@ -142,10 +145,96 @@ public class ConnectionThread extends Thread {
 
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
 
-        ps.setString(1, clientMessage.getOptions().getCodicePacco());
+        ps.setString(1, clientMessage.getPackOptions().getCodicePacco());
 
         ps.executeUpdate();
 
         MessageUtil.sendMessageTo(client, clientMessage);
     }
-}
+
+    /** Metodo che seleziona un fattorino basandosi su un determinato ID */
+    private void selectDeliveryManFromID(Message clientMessage) throws SQLException, IOException {
+        String sql = "SELECT * FROM fattorini WHERE codiceFattorino = ?";
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+        /* Inserimento dei parametri nel comando */
+        ps.setString(1, clientMessage.getDelManOptions().getCodiceFattorino());
+
+        /* Acquisizione del risultatato */
+        ResultSet res = ps.executeQuery();
+
+        /* Costruzione del pacco sulla base del record ritornato dal DB */
+        res.next();
+
+        clientMessage.getResDelMan().add(new DeliveryMan(res));
+
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che seleziona tutti i fattorini */
+    private void selectAllDeliveryMen(Message clientMessage) throws SQLException, IOException {
+        String sql = "SELECT * FROM fattorini";
+
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        /* Acquisizone del risultato */
+        ResultSet res = ps.executeQuery();
+
+        /* Per ogni riga del risultato viene creato un pacco corrispondente */
+        while(res.next()) clientMessage.getResDelMan().add(new DeliveryMan(res));
+
+        /* Invio del pacco al client */
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che aggiunge un fattorino al database */
+    private void insertDeliveryMan(Message clientMessage) throws SQLException, IOException {
+        String sql = "INSERT INTO fattorini VALUES(?,?,?,?,?)";
+
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        ps.setString(1, clientMessage.getDelManOptions().getCodiceFattorino());
+        ps.setString(2, clientMessage.getDelManOptions().getNome());
+        ps.setString(3, clientMessage.getDelManOptions().getCognome());
+        ps.setString(4, clientMessage.getDelManOptions().getPaese());
+        ps.setString(5, clientMessage.getDelManOptions().getCAP());
+
+        ps.executeUpdate();
+
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che rimuove un fattorino dal database basandosi su un determinato ID */
+    private void removeDeliveryManFromID(Message clientMessage) throws SQLException, IOException {
+        String sql = "REMOVE FROM fattorini WHERE codiceFattorino = ?";
+
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        ps.setString(1, clientMessage.getDelManOptions().getCodiceFattorino());
+
+        ps.executeUpdate();
+
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+
+    /** Metodo che seleziona tutti i pacchi asseganti ad un dato fattorino */
+    private void selectAllPacksFromDeliveryManID(Message clientMessage) throws SQLException, IOException {
+        String sql = "SELECT * FROM pacchi WHERE codiceFattorino = ?";
+
+        /* Creazione del comando SQL da lanciare */
+        PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
+
+        ps.setString(1, clientMessage.getDelManOptions().getCodiceFattorino());
+
+        /* Acquisizone del risultato */
+        ResultSet res = ps.executeQuery();
+
+        /* Per ogni riga del risultato viene creato un pacco corrispondente */
+        while(res.next()) clientMessage.getResPacks().add(new Pack(res));
+
+        /* Invio del pacco al client */
+        MessageUtil.sendMessageTo(client, clientMessage);
+    }
+ }

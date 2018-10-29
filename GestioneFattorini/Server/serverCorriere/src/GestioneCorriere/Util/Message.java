@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * 1) <i>DatabaseOperation</i> operation: è la stringa rappresentante l'operazione che si
  *   vuol fare effettuare al server sul database. Le operazioni sono standard e
  *   raggruppate nell'enumerazione DatabaseOperations. <b>Utilizzare quelle stringhe.</b><br><br>
- * 2) <i>Pack</i> packOptions: è il pacco che rappresenta le opzioni di ricerca sul database.
+ * 2)<i>Pack</i> packOptions: è il pacco che rappresenta le opzioni di ricerca sul database.
  *   <b>Non deve necessariamente essere utilizzato</b>. Viene utilizzato quando l'operazione
  *   richiede dei parametri.<br><br>Esempi:<br>
  *   - se voglio ottenere un pacco in base all'ID imposterò la DatabaseOperation corrispondente
@@ -33,37 +33,41 @@ import java.util.ArrayList;
  *    sarà comunque valorizzato con dentro <b>un solo pacco</b>. Se la query ha prodotto <i>n</i> risultati
  *    qui dentro saranno contenuti tutti gli <i>n</i> pacchi della query.
  */
-
 public class Message implements Serializable {
     static final long serialVersionUID = 42L;
     private DatabaseOperations operation = DatabaseOperations.VOID_OPERATION;
     private Pack packOptions = null;
     private ArrayList<Pack> resPacks = null;
+    private DeliveryMan delManOptions = null;
+    private ArrayList<DeliveryMan> resDelMan = null;
 
     public Message() {}
 
     public Message(DatabaseOperations operation) {
         this.operation = operation;
         this.resPacks = new ArrayList<Pack>();
+        this.resDelMan = new ArrayList<DeliveryMan>();
     }
 
-    public Message(DatabaseOperations operation, Pack packOptions) {
+    public Message(DatabaseOperations operation, Pack packOptions, DeliveryMan delManOptions) {
         this.operation = operation;
         this.packOptions = packOptions;
+        this.delManOptions = delManOptions;
         this.resPacks = new ArrayList<Pack>();
     }
 
-    public Message(DatabaseOperations operation, ArrayList<Pack> resPacks, Pack packOptions) {
+    public Message(DatabaseOperations operation, Pack packOptions, ArrayList<Pack> resPacks, ArrayList<DeliveryMan> redDelMan) {
         this.operation = operation;
         this.resPacks = resPacks;
         this.packOptions = packOptions;
+        this.resDelMan = redDelMan;
     }
 
-    public Pack getOptions() {
+    public Pack getPackOptions() {
         return packOptions;
     }
 
-    public void setOptions(Pack packOptions) {
+    public void setPackOptions(Pack packOptions) {
         this.packOptions = packOptions;
     }
 
@@ -83,11 +87,27 @@ public class Message implements Serializable {
         this.operation = operation;
     }
 
-    public ArrayList<Pack> getPacks() {
+    public ArrayList<Pack> getResPacks() {
         return resPacks;
     }
 
-    public void setPacks(ArrayList<Pack> resPacks) {
+    public void setResPacks(ArrayList<Pack> resPacks) {
         this.resPacks = resPacks;
+    }
+
+    public DeliveryMan getDelManOptions() {
+        return delManOptions;
+    }
+
+    public void setDelManOptions(DeliveryMan delManOptions) {
+        this.delManOptions = delManOptions;
+    }
+
+    public ArrayList<DeliveryMan> getResDelMan() {
+        return resDelMan;
+    }
+
+    public void setResDelMan(ArrayList<DeliveryMan> resDelMan) {
+        this.resDelMan = resDelMan;
     }
 }

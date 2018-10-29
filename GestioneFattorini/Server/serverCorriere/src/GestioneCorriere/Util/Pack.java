@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Creato da Andrea Delmastro, Alessio Franco. <br><br>
+ * Classe rapprensentante un pacco.
+ * Il pacco corrisponde alla rappresentazione nel DB.
+ */
 public class Pack implements Serializable {
     private String codicePacco = null;
     private String destinatario = null;
@@ -15,9 +20,11 @@ public class Pack implements Serializable {
     private int consegnato;
     private String noteFattorino = null;
     private String dataScadenza = null;
+    private String codFatt = null;
 
     public Pack(){};
-    public Pack(String codicePacco, String destinatario, String edificio, String indirizzo, String CAP, String paese, String provincia, int consegnato, String noteFattorino, String dataScadenza) {
+
+    public Pack(String codicePacco, String destinatario, String edificio, String indirizzo, String CAP, String paese, String provincia, int consegnato, String noteFattorino, String dataScadenza, String codFatt) {
         this.codicePacco = codicePacco;
         this.destinatario = destinatario;
         this.edificio = edificio;
@@ -28,6 +35,7 @@ public class Pack implements Serializable {
         this.consegnato = consegnato;
         this.noteFattorino = noteFattorino;
         this.dataScadenza = dataScadenza;
+        this.codFatt = codFatt;
     }
 
 
@@ -59,7 +67,8 @@ public class Pack implements Serializable {
                 packRecord.getString("provincia"),
                 packRecord.getInt("consegnato"),
                 packRecord.getString("noteFattorino"),
-                packRecord.getString("dataScadenza"));
+                packRecord.getString("dataScadenza"),
+                packRecord.getString("codFatt"));
     }
 
     public String getCodicePacco() {
@@ -140,5 +149,13 @@ public class Pack implements Serializable {
 
     public void setDataScadenza(String dataScadenza) {
         this.dataScadenza = dataScadenza;
+    }
+
+    public String getCodFatt() {
+        return codFatt;
+    }
+
+    public void setCodFatt(String codFatt) {
+        this.codFatt = codFatt;
     }
 }

@@ -11,11 +11,17 @@ package GestioneCorriere.Util;
  * rimozione di un'operazione.
  */
 public enum DatabaseOperations {
+
     SELECT_PACK_FROM_ID("SELPACKID"),
     SELECT_ALL_PACKS("SELALLPACKS"),
     SELECT_ALL_NON_SENT_PACKS("SELALLNSPACKS"),
     INSERT_PACK("INSPACK"),
     REMOVE_PACK_FROM_ID("REMPACKID"),
+    SELECT_DELIVERY_MAN_FROM_ID("SELDELMANID"),
+    SELECT_ALL_DELIVERY_MEN("SELALLDELMAN"),
+    INSERT_DELIVERY_MAN("INSDELMAN"),
+    REMOVE_DELIVERY_MAN_FROM_ID("REMDELMANID"),
+    SELECT_ALL_PACKS_FROM_DELIVERY_MAN_ID("SELALLPACKSDELMANID"),
     VOID_OPERATION("");
 
     final String string;
@@ -25,7 +31,7 @@ public enum DatabaseOperations {
       * da codice</b>: queste operazioni <b>non</b> verrebbero riconosciute dal sistema
       * e genererebbero una chiusura del socket da parte del server senza che operazione
       * alcuna venga effettuata. Le uniche Database operations ammesse sono quelle già
-      * codificate in questa classe */
+      * codificate in questa classe. */
     DatabaseOperations(String string) {
         this.string = string;
     }

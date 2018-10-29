@@ -8,11 +8,12 @@ import java.net.Socket;
  * Creato da Andrea Delmastro <br><br>
  * Utilities per la comunicazione mediante l'utilizzo di <i>Message</i> messaggi.
  */
-
 public class MessageUtil {
 
     /**
      * Metodo utilizzato per inviare un messaggio ad un socket destinatario.
+     * @param dest : socket destinatario.
+     * @param message : <i>Message</i> messaggio.
      **/
     public static void sendMessageTo(Socket dest, Message message) throws IOException {
         ObjectOutputStream oos = new ObjectOutputStream(dest.getOutputStream());
