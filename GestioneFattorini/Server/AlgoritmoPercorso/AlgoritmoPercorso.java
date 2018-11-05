@@ -1,36 +1,49 @@
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Created by inf.golettos1701 on 08/10/2018.
+ * Created by inf.golettos1701 on 29/10/2018.
  */
 public class AlgoritmoPercorso {
-    public static String partenza = "Corso Nizza 43";
-    private Corriere corriere = null;
 
-    public AlgoritmoPercorso(Corriere corriere) {
-        this.corriere = corriere;
+    public static String indirizzoMagazzino = null;
+
+    public static void main(String[] args) {
 
     }
 
-    public void createPercorso(){
-        ArrayList<Object> nodi = new ArrayList<>();
-        ArrayList<Pacco> elencoPacchi = corriere.getElencoPacchi();
-        String address = null;
+    public ArrayList<String> calcolaPercorso(ArrayList<Pacco> pacchi) {
+        ArrayList<String> percorso = null;
 
-        String nextAddress = elencoPacchi.get(0).getIndirizzo();
-        int cicli= elencoPacchi.size();
-        for(int i=0; i<cicli; i++) {
-            for (Pacco pacco : elencoPacchi) {
-                address = pacco.getIndirizzo();
-                if (true) {
-                    nextAddress = address;
-                }/* CONTROLLO INDIRIZZO PIU VICINO TRAMITE API*/
+        calcolaCoordinate(pacchi);
 
-            }
-            nodi.add(nextAddress);
-            elencoPacchi.remove()
+        Map<Pacco, Map<Pacco, Double>> grafoPacchi = creaGrafoPacchi(pacchi);
+
+        percorso = calcolaOrdineIndirizzi(grafoPacchi);
+
+        return percorso;
+    }
+
+    //Crea un'Arrylist con gli indirizzi dei pacchi ordinati secondo il percorso più veloce
+    private ArrayList<String> calcolaOrdineIndirizzi(Map<Pacco, Map<Pacco, Double>> grafoPacchi) {
+
+    }
+
+    //DistanceMatrix -> crea il grafo dei pacchi
+    private Map<Pacco,Map<Pacco,Double>> creaGrafoPacchi(ArrayList<Pacco> pacchi) {
+
+        Map<Pacco, Map<Pacco, Double>> grafo = new Map<Pacco, Map<Pacco, Double>>();
+
+        for()
+    }
+
+    //Per ogni pacco setta la latitudine e la longitudine -->Geocoding
+    private void calcolaCoordinate(ArrayList<Pacco> pacchi) {
+
+        for(Pacco pacco:pacchi){
+
         }
-
     }
 }

@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 /**
  * Created by inf.golettos1701 on 01/10/2018.
  */
@@ -13,12 +11,10 @@ public class Corriere {
     private double caricoDimensione=0;
     private double caricoPeso=0;
     private String cittaCAP=null;
-    private ArrayList<Pacco> elencoPacchi=null;
 
     public Corriere(String codiceCorriere, String cittaCAP) {
         this.codiceCorriere = codiceCorriere;
         this.cittaCAP = cittaCAP;
-        this.elencoPacchi = new ArrayList<Pacco>();
     }
 
     public String getCodiceCorriere() {
@@ -49,11 +45,4 @@ public class Corriere {
         this.cittaCAP = cittaCAP;
     }
 
-    public void addPacco(Pacco pacco){
-        elencoPacchi.add(pacco);
-    }
-
-    public ArrayList<Pacco> getElencoPacchi() {
-        return elencoPacchi;
-    }
 }
