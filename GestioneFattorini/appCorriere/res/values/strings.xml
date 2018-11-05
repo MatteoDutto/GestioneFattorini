@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">appCorriere</string>
+    <string name="lbl_login_string">Inserire il codice fattorino</string>
+    <string name="btn_login_string">Avanti</string>
+    <string name="error_insert_delman_code_error">Il codice fattorino non può essere nullo</string>
+    <string name="error_log_in">Errore di autenticazione</string>
+</resources>
