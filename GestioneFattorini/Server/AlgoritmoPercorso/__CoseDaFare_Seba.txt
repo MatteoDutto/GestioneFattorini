@@ -1,0 +1,33 @@
+Inizia a lavorare sulla Geocoding API
+Utilizzando la classe HTTPUrlConnection Per Fare La richiesta.
+La string della richiesta deve essere:
+
+"https://maps.googleapis.com/maps/api/geocode/json?address="  +
+	<Indirizzo> + "&key=" <API_KEY>;
+
+Dove indirizzo = NUMERO_CIVICO + VIA + CITTA + NAZIONE
+
+ES:
+
+"https://maps.googleapis.com/maps/api/geocode/json?address=" + 
+	"1600+Amphitheatre+Parkway,+Mountain+View,+CA" + "&key=" + YOUR_API_KEY
+
+---------------------------
+
+Se riesci a fare questo, inizia a vedere come utilizzare 
+le calssi Map (Aggiungere elementi, vedere elementi, ordinarle,...)
+
+------------------------------
+
+Link Utili:
+- (Class) HTTPUrlConnection:
+https://www.baeldung.com/java-http-request
+https://stackoverflow.com/questions/1359689/how-to-send-http-request-in-java
+
+- GEOCoding API:
+https://developers.google.com/maps/documentation/geocoding/intro
+
+- (Class) Map:
+https://docs.oracle.com/javase/7/docs/api/java/util/Map.html
+https://www.tutorialspoint.com/java/java_map_interface.htm
+
