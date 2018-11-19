@@ -41,26 +41,28 @@ public class Message implements Serializable {
     private DeliveryMan delManOptions = null;
     private ArrayList<DeliveryMan> resDelMan = null;
 
-    public Message() {}
-
-    public Message(DatabaseOperations operation) {
-        this.operation = operation;
+    public Message() {
         this.resPacks = new ArrayList<Pack>();
         this.resDelMan = new ArrayList<DeliveryMan>();
     }
 
+    public Message(DatabaseOperations operation) {
+        this();
+        this.operation = operation;
+    }
+
     public Message(DatabaseOperations operation, Pack packOptions, DeliveryMan delManOptions) {
+        this();
         this.operation = operation;
         this.packOptions = packOptions;
         this.delManOptions = delManOptions;
-        this.resPacks = new ArrayList<Pack>();
     }
 
-    public Message(DatabaseOperations operation, Pack packOptions, ArrayList<Pack> resPacks, ArrayList<DeliveryMan> redDelMan) {
+    public Message(DatabaseOperations operation, Pack packOptions, ArrayList<Pack> resPacks, ArrayList<DeliveryMan> resDelMan) {
         this.operation = operation;
         this.resPacks = resPacks;
         this.packOptions = packOptions;
-        this.resDelMan = redDelMan;
+        this.resDelMan = resDelMan;
     }
 
     public Pack getPackOptions() {

@@ -1,5 +1,6 @@
 package GestioneCorriere.Util;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -8,7 +9,7 @@ import java.sql.SQLException;
  * Classe rapprensentante un fattorino.
  * Il fattorino corrisponde alla rappresentazione nel DB.
  */
-public class DeliveryMan {
+public class DeliveryMan implements Serializable {
     private String codiceFattorino = null;
     private String nome = null;
     private String cognome = null;
@@ -71,5 +72,16 @@ public class DeliveryMan {
 
     public void setCAP(String CAP) {
         this.CAP = CAP;
+    }
+
+    @Override
+    public String toString() {
+        return "DeliveryMan{" +
+                "codiceFattorino='" + codiceFattorino + '\'' +
+                ", nome='" + nome + '\'' +
+                ", cognome='" + cognome + '\'' +
+                ", paese='" + paese + '\'' +
+                ", CAP='" + CAP + '\'' +
+                '}';
     }
 }

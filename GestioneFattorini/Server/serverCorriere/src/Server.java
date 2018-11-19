@@ -1,6 +1,4 @@
-import GestioneCorriere.Util.ErrorList;
-import GestioneCorriere.Util.MessagesList;
-import GestioneCorriere.Util.SocketUtil;
+import GestioneCorriere.Util.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -20,7 +18,7 @@ public class Server {
     /* Porta sulla quale risponde il server */
     private static final int serverPort = 3103;
     /* URL del Database */
-    private static final String dbURL = "/home/delmastro/Pacchi.db";
+    private static final String dbURL = "C:/Users/inf.francoa3103/Desktop/PacchiFattorini.db";
 
     /**
      * Metodo che si occupa di aprire la connessione verso il database e verso il client.

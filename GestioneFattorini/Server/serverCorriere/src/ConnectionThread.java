@@ -1,7 +1,4 @@
 import GestioneCorriere.Util.*;
-import GestioneCorriere.Util.ErrorList;
-import GestioneCorriere.Util.Message;
-import GestioneCorriere.Util.MessageUtil;
 
 import java.io.*;
 import java.net.Socket;
@@ -141,7 +138,7 @@ public class ConnectionThread extends Thread {
 
     /** Metodo che rimuove un pacco dal database basandosi su un determinato ID */
     private void removePackFromID(Message clientMessage) throws SQLException, IOException {
-        String sql = "REMOVE FROM pacchi WHERE codicePacco = ?";
+        String sql = "DELETE FROM pacchi WHERE codicePacco = ?";
 
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
 
@@ -154,7 +151,7 @@ public class ConnectionThread extends Thread {
 
     /** Metodo che seleziona un fattorino basandosi su un determinato ID */
     private void selectDeliveryManFromID(Message clientMessage) throws SQLException, IOException {
-        String sql = "SELECT * FROM fattorini WHERE codiceFattorino = ?";
+        String sql = "SELECT * FROM Fattorini WHERE codiceFattorino = ?";
         /* Creazione del comando SQL da lanciare */
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
         /* Inserimento dei parametri nel comando */
@@ -208,7 +205,7 @@ public class ConnectionThread extends Thread {
 
     /** Metodo che rimuove un fattorino dal database basandosi su un determinato ID */
     private void removeDeliveryManFromID(Message clientMessage) throws SQLException, IOException {
-        String sql = "REMOVE FROM fattorini WHERE codiceFattorino = ?";
+        String sql = "DELETE FROM fattorini WHERE codiceFattorino = ?";
 
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
 
@@ -221,7 +218,8 @@ public class ConnectionThread extends Thread {
 
     /** Metodo che seleziona tutti i pacchi asseganti ad un dato fattorino */
     private void selectAllPacksFromDeliveryManID(Message clientMessage) throws SQLException, IOException {
-        String sql = "SELECT * FROM pacchi WHERE codiceFattorino = ?";
+        /* Andrebbero restituiti in ordine in base all'algoritmo di Dutto */
+        String sql = "SELECT * FROM pacchi WHERE codFatt = ?";
 
         /* Creazione del comando SQL da lanciare */
         PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
