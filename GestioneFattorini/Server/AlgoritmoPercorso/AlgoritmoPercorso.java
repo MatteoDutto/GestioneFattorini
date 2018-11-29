@@ -18,9 +18,6 @@ public class AlgoritmoPercorso {
         ArrayList<String> percorso = null;
 
         calcolaCoordinate(pacchi);
-
-        Map<Pacco, Map<Pacco, Double>> grafoPacchi = creaGrafoPacchi(pacchi);
-
         percorso = calcolaOrdineIndirizzi(grafoPacchi);
 
                /*
@@ -102,50 +99,44 @@ thanks.*/
     }
 
     //Crea un'Arrylist con gli indirizzi dei pacchi ordinati secondo il percorso più veloce
+    //Utilizziamo GraphHopper (https://graphhopper.com/api/1/docs/) per calcolare
+    //il percorso migliore (date le coordinate di tutti i pacchi del fattorino)
+    //Graphopper calcola il percorso per tutti i pacchi in base ai fattorini disponibili
+    //La funzione restituisce un ArrayList di dimensioni pari al numero dei fattorini
+    //contenente la lista degli indirizzi già ordinati
     private ArrayList<String> calcolaOrdineIndirizzi(Map<Pacco, Map<Pacco, Double>> grafoPacchi) {
-
-
-
+        //Graphopper routing optimazed api..
+        // LINK: https://www.graphhopper.com/developers/ -> Documentations -> Route Optimization API
     }
 
-    //DistanceMatrix -> crea il grafo dei pacchi
-    private Map<Pacco,Map<Pacco,Double>> creaGrafoPacchi(ArrayList<Pacco> pacchi) {
-    	//Distanza tra  i 2 pacchi
-        double distanza = 0;
-        //Struttura dati con tutte le distanze dei pacchi
-        Map<Pacco, Map<Pacco, Double>> grafo = new HashMap<Pacco, Map<Pacco, Double>>();
-        
-        for(Pacco pacco : pacchi){
-            Map<Pacco, Double> temp = new HashMap<>();
-               
-            }
-            grafo.put(pacco, temp);
-        }
 
-        return grafo;
-    }
 
     //Per ogni pacco setta la latitudine e la longitudine -->Geocoding
+    //Geocoding è il processo di conversione degli indirizzi (come un indirizzo stradale)
+    // in coordinate geografiche (come latitudine e longitudine), che è possibile utilizzare
+    // per posizionare i marcatori su una mappa o posizionare la mappa.
     private void calcolaCoordinate(ArrayList<Pacco> pacchi) throws MalformedURLException {
     	//Numero civico - Via - Città - Stato - CAP
     	String indirizzo = null;
     	Geocoding codifica = new Geocoding();
+        //JSONParse serve a fare il parse di una stringa per convertirla in un oggetto JSON
     	JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(stringToParse);
+        //https://www.json.org/
+		JSONObject json = null;
 
-
+        //Per ogni pacco, preso l'indirizzo per la Geocoding, vengono calcolate la
+        //latitudine e la longitudine
         for(Pacco pacco:pacchi){
+            //Settaggio dell'indirizzo come richiesto per la Geocoding
         	indirizzo = pacco.getIndirizzo() + "," + pacco.getCitta() + "," + "Italy" + "," + pacco.getCittaCap();
             String results = codifica.getJSONByGoogle(indirizzo);
-
+            //Oggetto JSON che preleva il risultato della Geocoding
            JSONObject json = (JSONObject) parser.parse(results);
-
+            //Metodo utilizzato per prelevare dall'oggetto JSON
+            //solamente la latitudine e la longitudine dell'inidirizzo del pacco
+            //per poi venire settati alle proprietà del pacco
            pacco.setLat(getJSONObject("results").getJSONObject("location").getJSONString("lat"); 
-           pacco.setLongi(getJSONObject("results").getJSONObject("location").getJSONString("lng"); 
-
-           //Graphopper routing optimazed api..
-           // LINK: https://www.graphhopper.com/developers/ -> Documentations -> Route Optimization API 
-
+           pacco.setLongi(getJSONObject("results").getJSONObject("location").getJSONString("lng");
 
         }
     }
