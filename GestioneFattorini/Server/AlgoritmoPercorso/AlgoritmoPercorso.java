@@ -135,8 +135,8 @@ thanks.*/
             //Metodo utilizzato per prelevare dall'oggetto JSON
             //solamente la latitudine e la longitudine dell'inidirizzo del pacco
             //per poi venire settati alle proprietà del pacco
-           pacco.setLat(getJSONObject("results").getJSONObject("location").getJSONString("lat"); 
-           pacco.setLongi(getJSONObject("results").getJSONObject("location").getJSONString("lng");
+           pacco.setLat(json.getJSONObject("results").getJSONObject("location").getJSONString("lat"); 
+           pacco.setLongi(json.getJSONObject("results").getJSONObject("location").getJSONString("lng");
 
         }
     }
